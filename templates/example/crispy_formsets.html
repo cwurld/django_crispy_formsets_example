@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<!-- Inspired by http://kevindias.com/writing/django-class-based-views-multiple-inline-formsets/ -->
+
+{% block title %}Formset Example{% endblock %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-heading">{{ headline }}</h4>
+        </div>
+
+        <div class="panel-body">
+            <form id="my_form" class="form-horizontal" method="post">
+                {% csrf_token %}
+                <div class="form-horizontal">
+                    {% crispy parent_form %}
+                </div>
+
+                <fieldset id="id_items_formset">
+                    <legend>Children</legend>
+                    <div>
+                        {{ child_formset.management_form }}
+                    </div>
+
+                    <table class="table table-striped table-condensed">
+                        <thead>
+                            <th>Name</th>
+                            {% if child_formset.can_delete %}
+                                <th>Delete</th>
+                            {% endif %}
+                        </thead>
+
+                        <tbody class="form-inline">
+                            {% for item in child_formset %}
+                                <tr>
+                                    {{ item.id }}
+                                    {% include "bootstrap3/inline_form_field.html" with field=item.name %}
+                                    {% if child_formset.can_delete %}
+                                        {% include "bootstrap3/inline_form_field.html" with field=item.DELETE %}
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </fieldset>
+                <input type="submit" name="save" value="Save" class="btn btn-primary">
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block inline_js %}
+    <script src="{% static "js/jquery.formset.js" %}"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('#my_form').find('tbody tr').formset({ prefix: '{{child_formset.prefix }}'});
+        });
+    </script>
+{% endblock %}
